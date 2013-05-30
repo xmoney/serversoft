@@ -57,6 +57,9 @@ function InstallReady()
 	mkdir -p $FileDir/conf;
 	mkdir -p $FileDir/packages/untar;
 	chmod +Rw $FileDir/packages;
+
+	groupadd www;
+	useradd -s /sbin/nologin -g www www;
 }
 
 function InstallNginx()
@@ -76,7 +79,7 @@ function InstallNginx()
 		make -j $Cpunum;
 		make install;
 
-		$InstallDir/nginx/sbin/nginx;
+		#$InstallDir/nginx/sbin/nginx;
 
 		echo "[OK] ${NginxVersion} install completed.";
 	else
@@ -127,6 +130,9 @@ DELETE FROM user WHERE not (user='root');
 FLUSH PRIVILEGES;
 EOF
 # **************************************
+
+		$InstallDir/mysql/support-files/mysql.server stop;
+
 		echo "[OK] ${MysqlVersion} install completed.";
 	else
 		echo '[NO] MySQL is installed.';
@@ -152,6 +158,57 @@ function InstallLibiconv()
 	echo "[OK] libiconv-1.14 install completed.";
 }
 
+function InstallOtherPackages()
+{
+	## libmcrypt-2.5.8
+	packageName='libmcrypt-2.5.8';
+	echo "[${packageName} Installing] ************************************************** >>";
+	Downloadfile "${packageName}.tar.gz" "https://raw.github.com/xmoney/serversoft/master/${packageName}.tar.gz";
+	rm -rf $FileDir/packages/untar/$packageName;
+	echo "tar -zxf ${packageName}.tar.gz ing...";
+	tar -zxf $FileDir/packages/$packageName.tar.gz -C $FileDir/packages/untar;
+
+	cd $FileDir/packages/untar/$packageName;
+
+	./configure;
+	make;
+	make install;
+
+	echo "[OK] ${packageName} install completed.";
+
+	## mhash-0.9.9.9
+	packageName='mhash-0.9.9.9';
+	echo "[${packageName} Installing] ************************************************** >>";
+	Downloadfile "${packageName}.tar.gz" "https://raw.github.com/xmoney/serversoft/master/${packageName}.tar.gz";
+	rm -rf $FileDir/packages/untar/$packageName;
+	echo "tar -zxf ${packageName}.tar.gz ing...";
+	tar -zxf $FileDir/packages/$packageName.tar.gz -C $FileDir/packages/untar;
+
+	cd $FileDir/packages/untar/$packageName;
+
+	./configure;
+	make;
+	make install;
+
+	echo "[OK] ${packageName} install completed.";
+
+	## mcrypt-2.6.8
+	packageName='mcrypt-2.6.8';
+	echo "[${packageName} Installing] ************************************************** >>";
+	Downloadfile "${packageName}.tar.gz" "https://raw.github.com/xmoney/serversoft/master/${packageName}.tar.gz";
+	rm -rf $FileDir/packages/untar/$packageName;
+	echo "tar -zxf ${packageName}.tar.gz ing...";
+	tar -zxf $FileDir/packages/$packageName.tar.gz -C $FileDir/packages/untar;
+
+	cd $FileDir/packages/untar/$packageName;
+
+	LD_LIBRARY_PATH=/usr/local/lib ./configure;
+	make;
+	make install;
+
+	echo "[OK] ${packageName} install completed.";
+}
+
 function InstallPhp()
 {
 	echo "[${PhpVersion} Installing] ************************************************** >>";
@@ -165,7 +222,7 @@ function InstallPhp()
 		groupadd www;
 		useradd -s /sbin/nologin -g www www;
 		
-		./configure --prefix=$InstallDir/php --with-mysql=mysqlnd --with-mysqli=mysqlnd --with-pdo-mysql=mysqlnd --enable-fpm --with-fpm-user=www --with-fpm-group=www --with-config-file-path=/etc --with-openssl --with-zlib  --with-curl --enable-ftp --with-gd --with-jpeg-dir --with-png-dir --with-freetype-dir --enable-gd-native-ttf --enable-mbstring --enable-zip --with-pcre-regex --without-pear --enable-maintainer-zts --enable-pthreads ;
+		./configure --prefix=$InstallDir/php --with-mysql=mysqlnd --with-mysqli=mysqlnd --with-pdo-mysql=mysqlnd --enable-fpm --with-fpm-user=www --with-fpm-group=www --with-config-file-path=/etc --with-openssl --with-zlib  --with-curl --enable-ftp --with-gd --with-jpeg-dir --with-png-dir --with-freetype-dir --enable-gd-native-ttf --enable-mbstring --with-mcrypt --with-mhash --enable-zip --with-pcre-regex --without-pear --enable-maintainer-zts --enable-pthreads ;
 
 		#make ZEND_EXTRA_LIBS='-liconv';
 		make -j $Cpunum ZEND_EXTRA_LIBS='-liconv';
@@ -179,7 +236,7 @@ function InstallPhp()
 		chmod +x /etc/init.d/php-fpm;
 		update-rc.d php-fpm defaults;
 		
-		$InstallDir/php/sbin/php-fpm;
+		#$InstallDir/php/sbin/php-fpm;
 
 		echo "[OK] ${PhpVersion} install completed.";
 	else
@@ -226,6 +283,13 @@ function DeletePackages()
 	apt-get --purge remove php;
 }
 
+function Run()
+{
+	$InstallDir/nginx/sbin/nginx;
+	$InstallDir/mysql/support-files/mysql.server start;
+	$InstallDir/php/sbin/php-fpm;
+}
+
 function Uninstall()
 {
 	echo -e "\033[41m\033[37m[Warning] Please backup your data first. Uninstall will delete all the data!!! \033[0m ";
@@ -259,10 +323,16 @@ ConfirmInstall;
 CheckSystem;
 DeletePackages;
 InstallBasePackages;
+InstallOtherPackages;
 InstallReady;
 InstallNginx;
 InstallMysql;
+# 
 # InstallLibiconv;
+# 
 InstallPhp;
+Run;
+
+
 
 
