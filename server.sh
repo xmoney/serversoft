@@ -4,7 +4,7 @@ export PATH
 
 clear;
 echo '================================================================';
-echo ' [LNMP/Nginx] Ubuntu ';
+echo ' [Devlopment Environment] Ubuntu ';
 echo ' by Aisyer! ';
 echo '================================================================';
 
@@ -19,6 +19,9 @@ InstallModel='';
 NginxVersion='nginx-1.4.1';
 MysqlVersion='mysql-5.6.11';
 PhpVersion='php-5.4.15';
+
+# SVN
+SvnData='/home/svn';
 
 
 
@@ -316,6 +319,24 @@ function Uninstall()
 
 	echo '[OK] Successfully uninstall.';
 	exit;
+}
+
+function InstallSVN()
+{
+	apt-get install subversion;
+	adduser svnuser;
+	addgroup subversion;
+	addgroup svnuser subversion;
+
+	mkdir $SvnData;
+	cd $SvnData;
+	mkdir svn_data;
+	chown -R root:subversion svn_data;
+	chmod -R g+rws svn_data;
+	svnadmin create /home/svn/svn_data;
+
+	# run
+	#svnserve -d -r /home/$SvnData;
 }
 
 # Start Install	*****************************************************************************
