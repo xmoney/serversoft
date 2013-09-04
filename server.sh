@@ -16,9 +16,9 @@ MysqlPass='test01';
 Cpunum='';
 InstallModel='';
 
-NginxVersion='nginx-1.4.1';
-MysqlVersion='mysql-5.6.11';
-PhpVersion='php-5.4.15';
+NginxVersion='nginx-1.4.2';
+MysqlVersion='mysql-5.6.13';
+PhpVersion='php-5.4.19';
 
 # SVN
 SvnData='/home/svn';
@@ -98,7 +98,7 @@ function InstallMysql()
 	echo "tar -zxf ${MysqlVersion}.tar.gz ing...";
 	tar -zxf $FileDir/packages/$MysqlVersion.tar.gz -C $FileDir/packages/untar;
 	
-	if [ ! -d /usr/local/mysql ]; then
+	if [ ! -d $InstallDir/mysql ]; then
 		cd $FileDir/packages/untar/$MysqlVersion;
 		groupadd mysql;
 		useradd -s /sbin/nologin -g mysql mysql;
@@ -125,10 +125,10 @@ function InstallMysql()
 		rm -rf $InstallDir/mysql/data/test;
 		
 # EOF **********************************
-$InstallDir/mysql/bin/mysql -h127.0.0.1 -uroot -p$MysqlPass <<EOF
+$InstallDir/mysql/bin/mysql  <<EOF
 USE mysql;
 DELETE FROM user WHERE user='';
-UPDATE user set password=password('$MysqlPass') WHERE user='root';
+UPDATE user set password=password('${MysqlPass}') WHERE user='root';
 DELETE FROM user WHERE not (user='root');
 FLUSH PRIVILEGES;
 EOF
@@ -220,12 +220,13 @@ function InstallPhp()
 	echo "tar -zxf ${PhpVersion}.tar.gz ing...";
 	tar -zxf $FileDir/packages/$PhpVersion.tar.gz -C $FileDir/packages/untar;
 
-	if [ ! -d /usr/local/php ]; then
+	if [ ! -d $InstallDir/php ]; then
 		cd $FileDir/packages/untar/$PhpVersion;
 		groupadd www;
 		useradd -s /sbin/nologin -g www www;
 		
-		./configure --prefix=$InstallDir/php --with-mysql=mysqlnd --with-mysqli=mysqlnd --with-pdo-mysql=mysqlnd --enable-fpm --with-fpm-user=www --with-fpm-group=www --with-config-file-path=/etc --with-openssl --with-zlib  --with-curl --enable-ftp --with-gd --with-jpeg-dir --with-png-dir --with-freetype-dir --enable-gd-native-ttf --enable-mbstring --with-mcrypt --with-mhash --enable-zip --with-pcre-regex --without-pear --enable-maintainer-zts --enable-pthreads ;
+		#./configure --prefix=$InstallDir/php --with-mysql=$InstallDir/mysql --with-mysqli=$InstallDir/mysql/bin/mysql_config --enable-pdo --with-pdo-mysql=$InstallDir/mysql --enable-fpm --with-fpm-user=www --with-fpm-group=www --with-config-file-path=/etc --with-openssl --with-zlib  --with-curl --enable-ftp --with-gd --with-jpeg-dir --with-png-dir --with-freetype-dir --enable-gd-native-ttf --enable-mbstring --with-mcrypt --with-mhash --enable-zip --with-pcre-regex --without-pear --enable-maintainer-zts --enable-pthreads --enable-cli;
+		./configure --prefix=$InstallDir/php --enable-mysqlnd --with-mysql=mysqlnd --with-mysqli=mysqlnd --enable-pdo --with-pdo-mysql=mysqlnd --enable-fpm --with-fpm-user=www --with-fpm-group=www --with-config-file-path=/etc --with-openssl --with-zlib  --with-curl --enable-ftp --with-gd --with-jpeg-dir --with-png-dir --with-freetype-dir --enable-gd-native-ttf --enable-mbstring --with-mcrypt --with-mhash --enable-zip --with-pcre-regex --without-pear --enable-maintainer-zts --enable-pthreads --enable-cli;
 
 		#make ZEND_EXTRA_LIBS='-liconv';
 		make -j $Cpunum ZEND_EXTRA_LIBS='-liconv';
@@ -316,6 +317,11 @@ function Uninstall()
 	update-rc.d -f mysql remove;
 	rm -rf /etc/init.d/php-fpm;
 	rm -rf /etc/init.d/mysql;
+
+	rm -rf /etc/php*;
+	rm /usr/bin/php*;
+	rm /usr/sbin/php*;
+	rm /usr/bin/mysql*;
 
 	echo '[OK] Successfully uninstall.';
 	exit;
