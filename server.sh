@@ -19,6 +19,7 @@ InstallModel='';
 NginxVersion='nginx-1.4.2';
 MysqlVersion='mysql-5.6.13';
 PhpVersion='php-5.4.19';
+RedisVersion='redis-2.8.6';
 
 # SVN
 SvnData='/home/svn';
@@ -59,7 +60,7 @@ function InstallReady()
 {
 	mkdir -p $FileDir/conf;
 	mkdir -p $FileDir/packages/untar;
-	chmod +Rw $FileDir/packages;
+	chmod +w -R $FileDir/packages;
 
 	groupadd www;
 	useradd -s /sbin/nologin -g www www;
@@ -309,14 +310,17 @@ function Uninstall()
 
 	rm -rf $InstallDir/nginx;
 	rm -rf $InstallDir/mysql /etc/my.cnf;
+	rm -rf $InstallDir/redis /etc/redis;
 	rm -rf $InstallDir/php /usr/lib/php /etc/php.ini;
 	rm -rf /etc/logrotate.d/nginx /root/.mysqlroot;
 	rm -rf $FileDir/packages/untar;
 	
 	update-rc.d -f php-fpm remove;
 	update-rc.d -f mysql remove;
+	update-rc.d -f redis remove;
 	rm -rf /etc/init.d/php-fpm;
 	rm -rf /etc/init.d/mysql;
+	rm -rf /etc/init.d/redis;
 
 	rm -rf /etc/php*;
 	rm /usr/bin/php*;
@@ -325,6 +329,53 @@ function Uninstall()
 
 	echo '[OK] Successfully uninstall.';
 	exit;
+}
+
+function InstallRedis()
+{
+	echo "[${RedisVersion} Installing] ************************************************** >>";
+	Downloadfile "${RedisVersion}.tar.gz" "https://raw.github.com/xmoney/serversoft/master/${RedisVersion}.tar.gz";
+	rm -rf $FileDir/packages/untar/$RedisVersion;
+	echo "tar -zxf ${RedisVersion}.tar.gz ing...";
+	tar -zxf $FileDir/packages/$RedisVersion.tar.gz -C $FileDir/packages/untar;
+
+	if [ ! -d $InstallDir/redis ]; then
+		cd $FileDir/packages/untar/$RedisVersion;
+		make
+
+		mkdir /etc/redis;
+		mkdir /data/redis;
+
+		cp -rf $FileDir/packages/untar/$RedisVersion/src $InstallDir/redis
+		cp $FileDir/packages/untar/$RedisVersion/redis.conf /etc/redis/redis.conf
+		cp $FileDir/packages/untar/$RedisVersion/sentinel.conf /etc/redis/sentinel.conf
+
+		cp $FileDir/packages/untar/$RedisVersion/utils/redis_init_script /etc/init.d/redis
+
+		chmod +x /etc/init.d/redis;
+		update-rc.d redis defaults;
+
+		echo "[OK] ${RedisVersion} install completed.";
+	else
+		echo '[NO] Redis is installed.';
+	fi;
+}
+
+function InstallPhpRedis()
+{
+	echo "[phpredis Installing] ************************************************** >>";
+	Downloadfile "phpredis.tar.gz" "https://raw.github.com/xmoney/serversoft/master/phpredis.tar.gz";
+	echo "tar -xf phpredis.tar.gz ing...";
+	rm -rf $FileDir/packages/untar/phpredis;
+	tar -zxf $FileDir/packages/phpredis.tar.gz -C $FileDir/packages/untar;
+
+	cd $FileDir/packages/untar/phpredis;
+
+	$InstallDir/php/bin/phpize;
+	./configure	--with-php-config=$InstallDir/php/bin/php-config #--enable-redis-igbinary
+	make && make install
+
+	echo "[OK] phpredis install completed.";
 }
 
 function InstallSVN()
@@ -339,26 +390,28 @@ function InstallSVN()
 	mkdir svn_data;
 	chown -R root:subversion svn_data;
 	chmod -R g+rws svn_data;
-	svnadmin create /home/svn/svn_data;
+	svnadmin create $SvnData/svn_data;
 
 	# run
 	#svnserve -d -r /home/$SvnData;
 }
 
 # Start Install	*****************************************************************************
-ConfirmInstall;
-CheckSystem;
-DeletePackages;
-InstallBasePackages;
-InstallOtherPackages;
+# ConfirmInstall;
+# CheckSystem;
+# DeletePackages;
+# InstallBasePackages;
+# InstallOtherPackages;
 InstallReady;
-InstallNginx;
-InstallMysql;
-# 
-# InstallLibiconv;
-# 
-InstallPhp;
-Run;
+# InstallNginx;
+# InstallMysql;
+# # 
+# # InstallLibiconv;
+# # 
+# InstallPhp;
+# InstallRedis;
+InstallPhpRedis;
+# Run;
 
 
 
