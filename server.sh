@@ -18,7 +18,7 @@ InstallModel='';
 
 NginxVersion='nginx-1.4.2';
 MysqlVersion='mysql-5.6.13';
-PhpVersion='php-5.4.19';
+PhpVersion='php-5.5.8';
 RedisVersion='redis-2.8.6';
 
 # SVN
@@ -227,7 +227,7 @@ function InstallPhp()
 		useradd -s /sbin/nologin -g www www;
 		
 		#./configure --prefix=$InstallDir/php --with-mysql=$InstallDir/mysql --with-mysqli=$InstallDir/mysql/bin/mysql_config --enable-pdo --with-pdo-mysql=$InstallDir/mysql --enable-fpm --with-fpm-user=www --with-fpm-group=www --with-config-file-path=/etc --with-openssl --with-zlib  --with-curl --enable-ftp --with-gd --with-jpeg-dir --with-png-dir --with-freetype-dir --enable-gd-native-ttf --enable-mbstring --with-mcrypt --with-mhash --enable-zip --with-pcre-regex --without-pear --enable-maintainer-zts --enable-pthreads --enable-cli;
-		./configure --prefix=$InstallDir/php --enable-mysqlnd --with-mysql=mysqlnd --with-mysqli=mysqlnd --enable-pdo --with-pdo-mysql=mysqlnd --enable-fpm --with-fpm-user=www --with-fpm-group=www --with-config-file-path=/etc --with-openssl --with-zlib  --with-curl --enable-ftp --with-gd --with-jpeg-dir --with-png-dir --with-freetype-dir --enable-gd-native-ttf --enable-mbstring --with-mcrypt --with-mhash --enable-zip --with-pcre-regex --without-pear --enable-maintainer-zts --enable-pthreads --enable-cli;
+		./configure --prefix=$InstallDir/php --enable-mysqlnd --with-mysql=mysqlnd --with-mysqli=mysqlnd --enable-pdo --with-pdo-mysql=mysqlnd --enable-fpm --with-fpm-user=www --with-fpm-group=www --with-config-file-path=/etc --with-openssl --with-zlib  --with-curl --enable-ftp --with-gd --with-jpeg-dir --with-png-dir --with-freetype-dir --enable-gd-native-ttf --enable-mbstring --with-mcrypt --with-mhash --enable-zip --with-pcre-regex --without-pear --enable-maintainer-zts --enable-pthreads --enable-cli --enable-opcache;
 
 		#make ZEND_EXTRA_LIBS='-liconv';
 		make -j $Cpunum ZEND_EXTRA_LIBS='-liconv';
