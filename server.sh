@@ -16,9 +16,9 @@ MysqlPass='test01';
 Cpunum='';
 InstallModel='';
 
-NginxVersion='nginx-1.4.2';
-MysqlVersion='mysql-5.6.13';
-PhpVersion='php-5.5.8';
+NginxVersion='nginx-1.4.6';
+MysqlVersion='mysql-5.6.16';
+PhpVersion='php-5.5.10';
 RedisVersion='redis-2.8.6';
 
 # SVN
@@ -64,6 +64,12 @@ function InstallReady()
 
 	groupadd www;
 	useradd -s /sbin/nologin -g www www;
+
+	killall nginx;
+	killall mysqld;
+	killall php-cgi;
+	killall php-fpm;
+	killall php5-fpm;
 }
 
 function InstallNginx()
