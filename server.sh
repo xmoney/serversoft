@@ -249,6 +249,9 @@ function InstallPhp()
 		
 		#$InstallDir/php/sbin/php-fpm;
 
+		wget http://pear.php.net/go-pear.phar
+     	$InstallDir/php/bin/php go-pear.phar
+
 		echo "[OK] ${PhpVersion} install completed.";
 	else
 		echo '[NO] PHP is installed.';
