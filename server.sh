@@ -16,10 +16,10 @@ MysqlPass='test01';
 Cpunum='';
 InstallModel='';
 
-NginxVersion='nginx-1.4.6';
+NginxVersion='nginx-1.7.2';
 MysqlVersion='mysql-5.6.16';
-PhpVersion='php-5.5.10';
-RedisVersion='redis-2.8.6';
+PhpVersion='php-5.5.13';
+RedisVersion='redis-2.8.12';
 
 # SVN
 SvnData='/home/svn';
@@ -233,7 +233,7 @@ function InstallPhp()
 		useradd -s /sbin/nologin -g www www;
 		
 		#./configure --prefix=$InstallDir/php --with-mysql=$InstallDir/mysql --with-mysqli=$InstallDir/mysql/bin/mysql_config --enable-pdo --with-pdo-mysql=$InstallDir/mysql --enable-fpm --with-fpm-user=www --with-fpm-group=www --with-config-file-path=/etc --with-openssl --with-zlib  --with-curl --enable-ftp --with-gd --with-jpeg-dir --with-png-dir --with-freetype-dir --enable-gd-native-ttf --enable-mbstring --with-mcrypt --with-mhash --enable-zip --with-pcre-regex --without-pear --enable-maintainer-zts --enable-pthreads --enable-cli;
-		./configure --prefix=$InstallDir/php --enable-mysqlnd --with-mysql=mysqlnd --with-mysqli=mysqlnd --enable-pdo --with-pdo-mysql=mysqlnd --enable-fpm --with-fpm-user=www --with-fpm-group=www --with-config-file-path=/etc --with-openssl --with-zlib  --with-curl --enable-ftp --with-gd --with-jpeg-dir --with-png-dir --with-freetype-dir --enable-gd-native-ttf --enable-mbstring --with-mcrypt --with-mhash --enable-zip --with-pcre-regex --without-pear --enable-maintainer-zts --enable-pthreads --enable-cli --enable-opcache;
+		./configure --prefix=$InstallDir/php --enable-mysqlnd --with-mysql=mysqlnd --with-mysqli=mysqlnd --enable-pdo --with-pdo-mysql=mysqlnd --enable-fpm --with-fpm-user=www --with-fpm-group=www --with-config-file-path=/etc --with-openssl --with-zlib  --with-curl --enable-ftp --with-gd --with-jpeg-dir --with-png-dir --with-freetype-dir --enable-gd-native-ttf --enable-mbstring --with-mcrypt --with-mhash --enable-zip --with-pcre-regex --without-pear --enable-maintainer-zts --enable-cli --enable-opcache --with-readline --with-bz2 --enable-zip --enable-sockets --enable-sysvsem --enable-sysvshm --with-gettext --enable-bcmath;
 
 		#make ZEND_EXTRA_LIBS='-liconv';
 		make -j $Cpunum ZEND_EXTRA_LIBS='-liconv';
@@ -343,7 +343,7 @@ function Uninstall()
 function InstallRedis()
 {
 	echo "[${RedisVersion} Installing] ************************************************** >>";
-	Downloadfile "${RedisVersion}.tar.gz" "https://raw.github.com/xmoney/serversoft/master/${RedisVersion}.tar.gz";
+	Downloadfile "${RedisVersion}.tar.gz" "http://download.redis.io/releases/${RedisVersion}.tar.gz";
 	rm -rf $FileDir/packages/untar/$RedisVersion;
 	echo "tar -zxf ${RedisVersion}.tar.gz ing...";
 	tar -zxf $FileDir/packages/$RedisVersion.tar.gz -C $FileDir/packages/untar;
