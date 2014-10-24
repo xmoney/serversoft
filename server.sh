@@ -13,7 +13,6 @@ FileDir='/home/server_install_files/';
 InstallDir='/usr/local/server';
 MysqlPass='test01';
 
-Cpunum='';
 InstallModel='';
 
 NginxVersion='nginx-1.7.2';
@@ -36,7 +35,7 @@ function Downloadfile()
 		echo "[OK] $1 found.";
 	else
 		echo "[Notice] $1 not found, download now......";
-		if ! wget -c --tries=3 ${2}?${randstr} ; then
+		if ! wget -c --tries=10 --wait=3 --waitretry=3 ${2}?${randstr} ; then
 			echo "[Error] Download Failed : $1, please check $2 ";
 			exit;
 		else
@@ -50,7 +49,7 @@ function InstallBasePackages()
 	apt-get remove -y apache2 apache2-doc apache2-utils apache2.2-common apache2.2-bin apache2-mpm-prefork apache2-doc apache2-mpm-worker mysql-client mysql-server mysql-common php;
 	killall apache2;
 	apt-get update;
-	for packages in build-essential gcc g++ cmake make ntp logrotate automake patch autoconf autoconf2.13 re2c wget flex cron libzip-dev libc6-dev rcconf bison cpp binutils unzip tar bzip2 libncurses5-dev libncurses5 libtool libevent-dev libpcre3 libpcre3-dev libpcrecpp0 libssl-dev zlibc openssl libsasl2-dev libxml2 libxml2-dev libltdl3-dev libltdl-dev zlib1g zlib1g-dev libbz2-1.0 libbz2-dev libglib2.0-0 libglib2.0-dev libpng3 libfreetype6 libfreetype6-dev libjpeg62 libjpeg62-dev libjpeg-dev libpng-dev libpng12-0 libpng12-dev curl libcurl3  libpq-dev libpq5 gettext libcurl4-gnutls-dev  libcurl4-openssl-dev libcap-dev ftp openssl expect; do
+	for packages in build-essential gcc g++ cmake make ntp logrotate automake patch autoconf autoconf2.13 re2c wget flex cron libzip-dev libreadline-dev libc6-dev rcconf bison cpp binutils unzip tar bzip2 libncurses5-dev libncurses5 libtool libevent-dev libpcre3 libpcre3-dev libpcrecpp0 libssl-dev zlibc openssl libsasl2-dev libxml2 libxml2-dev libltdl3-dev libltdl-dev zlib1g zlib1g-dev libbz2-1.0 libbz2-dev libglib2.0-0 libglib2.0-dev libpng3 libfreetype6 libfreetype6-dev libjpeg62 libjpeg62-dev libjpeg-dev libpng-dev libpng12-0 libpng12-dev curl libcurl3  libpq-dev libpq5 gettext libcurl4-gnutls-dev  libmcrypt-dev libcurl4-openssl-dev libcap-dev ftp openssl expect; do
 		echo "[${packages} Installing] ************************************************** >>";
 		apt-get install -y $packages --force-yes;apt-get -fy install;apt-get -y autoremove; 
 	done;
@@ -86,7 +85,7 @@ function InstallNginx()
 	if [ ! -d /usr/local/nginx ]; then
 		cd $FileDir/packages/untar/$NginxVersion;
 		./configure --prefix=$InstallDir/nginx --user=www --group=www --with-http_ssl_module --with-http_stub_status_module --with-http_realip_module --with-http_gzip_static_module ;
-		make -j $Cpunum;
+		make;
 		make install;
 
 		#$InstallDir/nginx/sbin/nginx;
@@ -112,7 +111,7 @@ function InstallMysql()
 		
 		cmake -DCMAKE_INSTALL_PREFIX=$InstallDir/mysql  -DDEFAULT_CHARSET=utf8 -DDEFAULT_COLLATION=utf8_general_ci -DWITH_EXTRA_CHARSETS=complex -DWITH_READLINE=1 -DENABLED_LOCAL_INFILE=1;
 		
-		make -j $Cpunum;
+		make;
 		make install;
 		
 		chmod +w $InstallDir/mysql;
@@ -170,6 +169,8 @@ function InstallLibiconv()
 
 function InstallOtherPackages()
 {
+	sleep(3);
+
 	## libmcrypt-2.5.8
 	packageName='libmcrypt-2.5.8';
 	echo "[${packageName} Installing] ************************************************** >>";
@@ -236,9 +237,10 @@ function InstallPhp()
 		./configure --prefix=$InstallDir/php --enable-mysqlnd --with-mysql=mysqlnd --with-mysqli=mysqlnd --enable-pdo --with-pdo-mysql=mysqlnd --enable-fpm --with-fpm-user=www --with-fpm-group=www --with-config-file-path=/etc --with-openssl --with-zlib  --with-curl --enable-ftp --with-gd --with-jpeg-dir --with-png-dir --with-freetype-dir --enable-gd-native-ttf --enable-mbstring --with-mcrypt --with-mhash --enable-zip --with-pcre-regex --without-pear --enable-maintainer-zts --enable-cli --enable-opcache --with-readline --with-bz2 --enable-zip --enable-sockets --enable-sysvsem --enable-sysvshm --with-gettext --enable-bcmath;
 
 		#make ZEND_EXTRA_LIBS='-liconv';
-		make -j $Cpunum ZEND_EXTRA_LIBS='-liconv';
+		make ZEND_EXTRA_LIBS='-liconv';
 		make install;
 		
+		mkdir -p $InstallDir/php/etc;
 		cp php.ini-* $InstallDir/php/etc;
 		cp php.ini-development /etc/php.ini;
 		
