@@ -64,6 +64,9 @@ function InstallReady()
 	groupadd www;
 	useradd -s /sbin/nologin -g www www;
 
+	mkdir -p /data/wwwroot;
+	mkdir -p /data/logs;
+
 	killall nginx;
 	killall mysqld;
 	killall php-cgi;
