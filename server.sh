@@ -172,8 +172,6 @@ function InstallLibiconv()
 
 function InstallOtherPackages()
 {
-	sleep(3);
-
 	## libmcrypt-2.5.8
 	packageName='libmcrypt-2.5.8';
 	echo "[${packageName} Installing] ************************************************** >>";
