@@ -102,7 +102,7 @@ function InstallNginx()
 function InstallMysql()
 {
 	echo "[${MysqlVersion} Installing] ************************************************** >>";
-	Downloadfile "${MysqlVersion}.tar.gz" "http://cdn.mysql.com/Downloads/MySQL-5.6/${MysqlVersion}.tar.gz";
+	Downloadfile "${MysqlVersion}.tar.gz" "http://cdn.mysql.com/Downloads/MySQL-5.6//${MysqlVersion}.tar.gz";
 	rm -rf $FileDir/packages/untar/$MysqlVersion;
 	echo "tar -zxf ${MysqlVersion}.tar.gz ing...";
 	tar -zxf $FileDir/packages/$MysqlVersion.tar.gz -C $FileDir/packages/untar;
@@ -175,7 +175,7 @@ function InstallOtherPackages()
 	## libmcrypt-2.5.8
 	packageName='libmcrypt-2.5.8';
 	echo "[${packageName} Installing] ************************************************** >>";
-	Downloadfile "${packageName}.tar.gz" "https://raw.github.com/xmoney/serversoft/master/${packageName}.tar.gz";
+	Downloadfile "${packageName}.tar.gz" "http://downloads.sourceforge.net/mcrypt/${packageName}.tar.gz";
 	rm -rf $FileDir/packages/untar/$packageName;
 	echo "tar -zxf ${packageName}.tar.gz ing...";
 	tar -zxf $FileDir/packages/$packageName.tar.gz -C $FileDir/packages/untar;
@@ -191,7 +191,7 @@ function InstallOtherPackages()
 	## mhash-0.9.9.9
 	packageName='mhash-0.9.9.9';
 	echo "[${packageName} Installing] ************************************************** >>";
-	Downloadfile "${packageName}.tar.gz" "https://raw.github.com/xmoney/serversoft/master/${packageName}.tar.gz";
+	Downloadfile "${packageName}.tar.gz" "http://downloads.sourceforge.net/mhash/${packageName}.tar.gz";
 	rm -rf $FileDir/packages/untar/$packageName;
 	echo "tar -zxf ${packageName}.tar.gz ing...";
 	tar -zxf $FileDir/packages/$packageName.tar.gz -C $FileDir/packages/untar;
@@ -207,7 +207,7 @@ function InstallOtherPackages()
 	## mcrypt-2.6.8
 	packageName='mcrypt-2.6.8';
 	echo "[${packageName} Installing] ************************************************** >>";
-	Downloadfile "${packageName}.tar.gz" "https://raw.github.com/xmoney/serversoft/master/${packageName}.tar.gz";
+	Downloadfile "${packageName}.tar.gz" "http://downloads.sourceforge.net/mcrypt/${packageName}.tar.gz";
 	rm -rf $FileDir/packages/untar/$packageName;
 	echo "tar -zxf ${packageName}.tar.gz ing...";
 	tar -zxf $FileDir/packages/$packageName.tar.gz -C $FileDir/packages/untar;
@@ -409,21 +409,21 @@ function InstallSVN()
 }
 
 # Start Install	*****************************************************************************
-# ConfirmInstall;
-# CheckSystem;
-# DeletePackages;
-# InstallBasePackages;
-# InstallOtherPackages;
-InstallReady;
-# InstallNginx;
-# InstallMysql;
+ ConfirmInstall;
+ CheckSystem;
+ DeletePackages;
+ InstallBasePackages;
+ InstallReady;
+ InstallOtherPackages;
+ InstallNginx;
+ InstallMysql;
 # # 
 # # InstallLibiconv;
 # # 
-# InstallPhp;
-# InstallRedis;
-InstallPhpRedis;
-# Run;
+ InstallPhp;
+ InstallRedis;
+ InstallPhpRedis;
+ Run;
 
 
 
