@@ -5,7 +5,7 @@ sudo apt-get update
 sudo apt-get upgrade -y
 sudo apt-get dist-upgrade
 
-sudo update-alternatives --remove-all gcc 
+sudo update-alternatives --remove-all gcc
 sudo update-alternatives --remove-all g++
 sudo apt-get install gcc-4.8
 sudo apt-get install g++-4.8
@@ -15,4 +15,3 @@ sudo update-alternatives --config gcc
 sudo update-alternatives --config g++
 
 sudo ln -s /usr/bin/cc /usr/bin/gcc
- 
