@@ -15,10 +15,10 @@ MysqlPass='test01';
 
 InstallModel='';
 
-NginxVersion='nginx-1.7.2';
-MysqlVersion='mysql-5.6.16';
-PhpVersion='php-5.5.13';
-RedisVersion='redis-2.8.12';
+NginxVersion='nginx-1.7.8';
+MysqlVersion='mysql-5.6.22';
+PhpVersion='php-5.6.3';
+RedisVersion='redis-2.8.18';
 
 # SVN
 SvnData='/home/svn';
@@ -46,6 +46,8 @@ function Downloadfile()
 
 function InstallBasePackages()
 {
+	apt-get install git;
+
 	apt-get remove -y apache2 apache2-doc apache2-utils apache2.2-common apache2.2-bin apache2-mpm-prefork apache2-doc apache2-mpm-worker mysql-client mysql-server mysql-common php;
 	killall apache2;
 	apt-get update;
@@ -390,6 +392,22 @@ function InstallPhpRedis()
 	echo "[OK] phpredis install completed.";
 }
 
+function InstallLevelDB()
+{
+	cd $InstallDir;
+
+	git clone https://github.com/google/leveldb.git;
+	cd leveldb;
+	make;
+
+	git clone https://github.com/reeze/php-leveldb.git;
+	cd php-leveldb;
+	$InstallDir/php/bin/phpize;
+	./configure --with-leveldb=$InstallDir/leveldb --with-php-config=$InstallDir/php/bin/php-config;
+	make;
+	make install;
+}
+
 function InstallSVN()
 {
 	apt-get install subversion;
@@ -423,6 +441,7 @@ function InstallSVN()
  InstallPhp;
  InstallRedis;
  InstallPhpRedis;
+ InstallLevelDB;
  Run;
 
 
