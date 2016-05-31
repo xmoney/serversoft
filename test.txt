@@ -4,4 +4,6 @@ mysql>GRANT ALL PRIVILEGES ON *.* TO 'test'@’127.0.0.1’ IDENTIFIED BY '65432
 mysql>FLUSH RIVILEGES
 
 
+
 dfsfsd
+
