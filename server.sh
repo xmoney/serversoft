@@ -11,14 +11,12 @@ echo '================================================================';
 # VAR ***************************************************************************************
 FileDir='/home/server_install_files/';
 InstallDir='/usr/local/server';
-MysqlPass='test01';
 
 InstallModel='';
 
-NginxVersion='nginx-1.7.8';
-MysqlVersion='mysql-5.6.22';
-PhpVersion='php-5.6.3';
-RedisVersion='redis-2.8.18';
+NginxVersion='nginx-1.9.4';
+PhpVersion='php-5.6.12';
+RedisVersion='redis-3.0.3';
 
 # SVN
 SvnData='/home/svn';
@@ -48,7 +46,7 @@ function InstallBasePackages()
 {
 	apt-get install git;
 
-	apt-get remove -y apache2 apache2-doc apache2-utils apache2.2-common apache2.2-bin apache2-mpm-prefork apache2-doc apache2-mpm-worker mysql-client mysql-server mysql-common php;
+	apt-get remove -y apache2 apache2-doc apache2-utils apache2.2-common apache2.2-bin apache2-mpm-prefork apache2-doc apache2-mpm-worker php;
 	killall apache2;
 	apt-get update;
 	for packages in build-essential gcc g++ cmake make ntp logrotate automake patch autoconf autoconf2.13 re2c wget flex cron libzip-dev libreadline-dev libc6-dev rcconf bison cpp binutils unzip tar bzip2 libncurses5-dev libncurses5 libtool libevent-dev libpcre3 libpcre3-dev libpcrecpp0 libssl-dev zlibc openssl libsasl2-dev libxml2 libxml2-dev libltdl3-dev libltdl-dev zlib1g zlib1g-dev libbz2-1.0 libbz2-dev libglib2.0-0 libglib2.0-dev libpng3 libfreetype6 libfreetype6-dev libjpeg62 libjpeg62-dev libjpeg-dev libpng-dev libpng12-0 libpng12-dev curl libcurl3  libpq-dev libpq5 gettext libcurl4-gnutls-dev  libmcrypt-dev libcurl4-openssl-dev libcap-dev ftp openssl expect; do
@@ -68,9 +66,11 @@ function InstallReady()
 
 	mkdir -p /data/wwwroot;
 	mkdir -p /data/logs;
+	mkdir -p /data/leveldb;
+
+	chmod -R 775 /data/leveldb;
 
 	killall nginx;
-	killall mysqld;
 	killall php-cgi;
 	killall php-fpm;
 	killall php5-fpm;
@@ -103,54 +103,14 @@ function InstallNginx()
 
 function InstallMysql()
 {
-	echo "[${MysqlVersion} Installing] ************************************************** >>";
-	Downloadfile "${MysqlVersion}.tar.gz" "http://cdn.mysql.com/Downloads/MySQL-5.6/${MysqlVersion}.tar.gz";
-	rm -rf $FileDir/packages/untar/$MysqlVersion;
-	echo "tar -zxf ${MysqlVersion}.tar.gz ing...";
-	tar -zxf $FileDir/packages/$MysqlVersion.tar.gz -C $FileDir/packages/untar;
-	
-	if [ ! -d $InstallDir/mysql ]; then
-		cd $FileDir/packages/untar/$MysqlVersion;
-		groupadd mysql;
-		useradd -s /sbin/nologin -g mysql mysql;
-		
-		cmake -DCMAKE_INSTALL_PREFIX=$InstallDir/mysql  -DDEFAULT_CHARSET=utf8 -DDEFAULT_COLLATION=utf8_general_ci -DWITH_EXTRA_CHARSETS=complex -DWITH_READLINE=1 -DENABLED_LOCAL_INFILE=1;
-		
-		make;
-		make install;
-		
-		chmod +w $InstallDir/mysql;
-		mkdir -p $InstallDir/mysql/data;
-		chown -R mysql:mysql $InstallDir/mysql;
-		
-		cp $InstallDir/mysql/support-files/my-default.cnf /etc/my.cnf;
-		
-		$InstallDir/mysql/scripts/mysql_install_db --user=mysql --defaults-file=/etc/my.cnf --basedir=$InstallDir/mysql --datadir=$InstallDir/mysql/data;
+	echo "[Mysql lastest version Installing] ************************************************** >>";
 
-		cp $InstallDir/mysql/support-files/mysql.server /etc/init.d/mysql;
-		chmod +x /etc/init.d/mysql;
-		update-rc.d mysql defaults;
-		
-		$InstallDir/mysql/support-files/mysql.server start;
+	wget https://repo.percona.com/apt/percona-release_0.1-3.$(lsb_release -sc)_all.deb
+	dpkg -i percona-release_0.1-3.$(lsb_release -sc)_all.deb
+	sudo apt-get update
+	sudo apt-get install percona-server-server-5.7
 
-		rm -rf $InstallDir/mysql/data/test;
-		
-# EOF **********************************
-$InstallDir/mysql/bin/mysql  <<EOF
-USE mysql;
-DELETE FROM user WHERE user='';
-UPDATE user set password=password('${MysqlPass}') WHERE user='root';
-DELETE FROM user WHERE not (user='root');
-FLUSH PRIVILEGES;
-EOF
-# **************************************
-
-		$InstallDir/mysql/support-files/mysql.server stop;
-
-		echo "[OK] ${MysqlVersion} install completed.";
-	else
-		echo '[NO] MySQL is installed.';
-	fi;
+	echo "[OK] Mysql lastest version install completed.";
 }
 
 function InstallLibiconv()
@@ -237,7 +197,7 @@ function InstallPhp()
 		useradd -s /sbin/nologin -g www www;
 		
 		#./configure --prefix=$InstallDir/php --with-mysql=$InstallDir/mysql --with-mysqli=$InstallDir/mysql/bin/mysql_config --enable-pdo --with-pdo-mysql=$InstallDir/mysql --enable-fpm --with-fpm-user=www --with-fpm-group=www --with-config-file-path=/etc --with-openssl --with-zlib  --with-curl --enable-ftp --with-gd --with-jpeg-dir --with-png-dir --with-freetype-dir --enable-gd-native-ttf --enable-mbstring --with-mcrypt --with-mhash --enable-zip --with-pcre-regex --without-pear --enable-maintainer-zts --enable-pthreads --enable-cli;
-		./configure --prefix=$InstallDir/php --enable-mysqlnd --with-mysql=mysqlnd --with-mysqli=mysqlnd --enable-pdo --with-pdo-mysql=mysqlnd --enable-fpm --with-fpm-user=www --with-fpm-group=www --with-config-file-path=/etc --with-openssl --with-zlib  --with-curl --enable-ftp --with-gd --with-jpeg-dir --with-png-dir --with-freetype-dir --enable-gd-native-ttf --enable-mbstring --with-mcrypt --with-mhash --enable-zip --with-pcre-regex --without-pear --enable-maintainer-zts --enable-cli --enable-opcache --with-readline --with-bz2 --enable-zip --enable-sockets --enable-sysvsem --enable-sysvshm --with-gettext --enable-bcmath;
+		./configure --prefix=$InstallDir/php --enable-mysqlnd --with-mysql=mysqlnd --with-mysqli=mysqlnd --enable-pdo --with-pdo-mysql=mysqlnd --enable-fpm --with-fpm-user=www --with-fpm-group=www --with-config-file-path=/etc --with-openssl --with-zlib  --with-curl --enable-ftp --with-gd --with-jpeg-dir --with-png-dir --with-freetype-dir --enable-gd-native-ttf --enable-mbstring --with-mcrypt --with-mhash --enable-zip --with-pcre-regex --without-pear --enable-maintainer-zts --enable-cli --enable-opcache --with-readline --with-bz2 --enable-zip --enable-sockets --enable-sysvsem --enable-sysvshm --with-gettext --enable-bcmath --enable-pcntl;
 
 		#make ZEND_EXTRA_LIBS='-liconv';
 		make ZEND_EXTRA_LIBS='-liconv';
@@ -297,15 +257,12 @@ function CheckSystem()
 function DeletePackages()
 {
 	apt-get --purge remove nginx
-	apt-get --purge remove mysql-server;
-	apt-get --purge remove mysql-common;
 	apt-get --purge remove php;
 }
 
 function Run()
 {
 	$InstallDir/nginx/sbin/nginx;
-	$InstallDir/mysql/support-files/mysql.server start;
 	$InstallDir/php/sbin/php-fpm;
 }
 
@@ -318,28 +275,22 @@ function Uninstall()
 	fi;
 
 	killall nginx;
-	killall mysqld;
 	killall php-cgi;
 	killall php-fpm;
 
 	rm -rf $InstallDir/nginx;
-	rm -rf $InstallDir/mysql /etc/my.cnf;
 	rm -rf $InstallDir/redis /etc/redis;
 	rm -rf $InstallDir/php /usr/lib/php /etc/php.ini;
-	rm -rf /etc/logrotate.d/nginx /root/.mysqlroot;
 	rm -rf $FileDir/packages/untar;
 	
 	update-rc.d -f php-fpm remove;
-	update-rc.d -f mysql remove;
 	update-rc.d -f redis remove;
 	rm -rf /etc/init.d/php-fpm;
-	rm -rf /etc/init.d/mysql;
 	rm -rf /etc/init.d/redis;
 
 	rm -rf /etc/php*;
 	rm /usr/bin/php*;
 	rm /usr/sbin/php*;
-	rm /usr/bin/mysql*;
 
 	echo '[OK] Successfully uninstall.';
 	exit;
@@ -434,14 +385,14 @@ function InstallSVN()
  InstallReady;
  InstallOtherPackages;
  InstallNginx;
- InstallMysql;
+ # InstallMysql;
 # # 
 # # InstallLibiconv;
 # # 
  InstallPhp;
  InstallRedis;
  InstallPhpRedis;
- InstallLevelDB;
+ # InstallLevelDB;
  Run;
 
 
