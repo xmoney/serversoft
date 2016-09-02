@@ -15,3 +15,12 @@ sudo update-alternatives --config gcc
 sudo update-alternatives --config g++
 
 sudo ln -s /usr/bin/cc /usr/bin/gcc
+
+
+
+
+sudo add-apt-repository ppa:ubuntu-toolchain-r/test
+sudo apt update
+sudo apt install gcc-6
+
+sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-6 60 --slave /usr/bin/g++ g++ /usr/bin/g++-6 

@@ -328,19 +328,17 @@ function InstallRedis()
 
 function InstallPhpRedis()
 {
-	echo "[phpredis Installing] ************************************************** >>";
-	Downloadfile "phpredis.tar.gz" "https://raw.github.com/xmoney/serversoft/master/phpredis.tar.gz";
-	echo "tar -xf phpredis.tar.gz ing...";
-	rm -rf $FileDir/packages/untar/phpredis;
-	tar -zxf $FileDir/packages/phpredis.tar.gz -C $FileDir/packages/untar;
+    echo "[phpredis Installing] ************************************************** >>";
+    cd $FileDir/packages/untar;
 
-	cd $FileDir/packages/untar/phpredis;
+    git clone https://github.com/phpredis/phpredis.git;
+    cd phpredis;
 
-	$InstallDir/php/bin/phpize;
-	./configure	--with-php-config=$InstallDir/php/bin/php-config #--enable-redis-igbinary
-	make && make install
+    $InstallDir/php/bin/phpize;
+    ./configure     --with-php-config=$InstallDir/php/bin/php-config #--enable-redis-igbinary
+    make && make install
 
-	echo "[OK] phpredis install completed.";
+    echo "[OK] phpredis install completed.";
 }
 
 function InstallLevelDB()
